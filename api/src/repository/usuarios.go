@@ -98,3 +98,18 @@ func (u usuarios) Show(ID uint64) (models.Usuario, error) {
 
 	return usuario, nil
 }
+
+func (u usuarios) Update(ID uint64, usuario models.Usuario) error {
+	statement, err := u.db.Prepare("UPDATE USUARIOS SET nome = ?, nick = ?, email = ? where id = ?")
+	if err != nil {
+		return err
+	}
+
+	defer statement.Close()
+
+	if _, err = statement.Exec(usuario.Nome, usuario.Nick, usuario.Email, ID); err != nil {
+		return err
+	}
+
+	return nil
+}
