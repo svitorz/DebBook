@@ -37,7 +37,7 @@ func (u usuarios) Store(usuario models.Usuario) (uint64, error) {
 	return uint64(lastInsertID), nil
 }
 
-func (u usuarios) Show(nomeOuNick string) ([]models.Usuario, error) {
+func (u usuarios) ShowAll(nomeOuNick string) ([]models.Usuario, error) {
 	nomeOuNick = fmt.Sprintf("%%%s%%", nomeOuNick) // %nomeOuNick&%
 
 	rows, err := u.db.Query(
@@ -69,4 +69,32 @@ func (u usuarios) Show(nomeOuNick string) ([]models.Usuario, error) {
 	}
 
 	return users, nil
+}
+
+func (u usuarios) Show(ID uint64) (models.Usuario, error) {
+	linhas, err := u.db.Query(
+		"SELECT id, nome, nick, email, criadoEm FROM USUARIOS WHERE id = ?",
+		ID,
+	)
+	if err != nil {
+		return models.Usuario{}, nil
+	}
+
+	defer linhas.Close()
+
+	var usuario models.Usuario
+
+	if linhas.Next() {
+		if err = linhas.Scan(
+			&usuario.ID,
+			&usuario.Nome,
+			&usuario.Nick,
+			&usuario.Email,
+			&usuario.CriadoEm,
+		); err != nil {
+			return models.Usuario{}, err
+		}
+	}
+
+	return usuario, nil
 }
