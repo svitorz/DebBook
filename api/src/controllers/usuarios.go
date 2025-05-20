@@ -114,7 +114,7 @@ func AtualizarUsuario(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if userID != tokenUserId {
-		responses.Err(w, http.StatusForbidden, errors.New("não é possível alterar um usuário sem permissão"))
+		responses.Err(w, http.StatusForbidden, errors.New("não é possível alterar um usuário se não o seu"))
 		return
 	}
 
@@ -155,12 +155,22 @@ func AtualizarUsuario(w http.ResponseWriter, r *http.Request) {
 
 func DeletarUsuario(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
-	userId, err := strconv.ParseUint(params["usuarioId"], 10, 64)
+	userID, err := strconv.ParseUint(params["usuarioId"], 10, 64)
 	if err != nil {
 		responses.Err(w, http.StatusBadRequest, err)
 		return
 	}
 
+	tokenUserId, err := auth.GetUserID(r)
+	if err != nil {
+		responses.Err(w, http.StatusUnauthorized, err)
+		return
+	}
+
+	if userID != tokenUserId {
+		responses.Err(w, http.StatusForbidden, errors.New("não é possível deletar um usuário se não o seu"))
+		return
+	}
 	db, err := database.Conectar()
 	if err != nil {
 		responses.Err(w, http.StatusInternalServerError, err)
@@ -170,7 +180,7 @@ func DeletarUsuario(w http.ResponseWriter, r *http.Request) {
 	defer db.Close()
 
 	repository := repository.NewUsersRepository(db)
-	if err = repository.Destroy(userId); err != nil {
+	if err = repository.Destroy(userID); err != nil {
 		responses.Err(w, http.StatusInternalServerError, err)
 		return
 	}
