@@ -2,8 +2,11 @@ package models
 
 import (
 	"errors"
+	"fmt"
 	"strings"
 	"time"
+
+	"github.com/badoux/checkmail"
 )
 
 type Usuario struct {
@@ -35,6 +38,12 @@ func (usuario *Usuario) validar(action string) error {
 	if usuario.Email == "" {
 		return errors.New("o email é obrigatório e não pode estar em branco")
 	}
+
+	if err := checkmail.ValidateFormat(usuario.Email); err != nil {
+		fmt.Println(usuario.Email)
+		return errors.New(" e-mail inserido é inválido")
+	}
+
 	if action == "cadastrar" && usuario.Senha == "" {
 		return errors.New("o senha é obrigatório e não pode estar em branco")
 	}
