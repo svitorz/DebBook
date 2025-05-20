@@ -113,3 +113,18 @@ func (u usuarios) Update(ID uint64, usuario models.Usuario) error {
 
 	return nil
 }
+
+func (u usuarios) Destroy(ID uint64) error {
+	statement, err := u.db.Prepare("DELETE FROM USUARIOS WHERE id = ?")
+	if err != nil {
+		return err
+	}
+
+	defer statement.Close()
+
+	if _, err = statement.Exec(ID); err != nil {
+		return err
+	}
+
+	return nil
+}
