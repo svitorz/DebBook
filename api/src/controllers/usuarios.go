@@ -1,11 +1,13 @@
 package controllers
 
 import (
+	"api/src/auth"
 	"api/src/database"
 	"api/src/models"
 	"api/src/repository"
 	"api/src/responses"
 	"encoding/json"
+	"errors"
 	"io/ioutil"
 	"net/http"
 	"strconv"
@@ -102,6 +104,17 @@ func AtualizarUsuario(w http.ResponseWriter, r *http.Request) {
 	userID, err := strconv.ParseUint(params["usuarioId"], 10, 64)
 	if err != nil {
 		responses.Err(w, http.StatusBadRequest, err)
+		return
+	}
+
+	tokenUserId, err := auth.GetUserID(r)
+	if err != nil {
+		responses.Err(w, http.StatusUnauthorized, err)
+		return
+	}
+
+	if userID != tokenUserId {
+		responses.Err(w, http.StatusForbidden, errors.New("não é possível alterar um usuário sem permissão"))
 		return
 	}
 
