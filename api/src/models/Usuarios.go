@@ -1,6 +1,7 @@
 package models
 
 import (
+	"api/src/security"
 	"errors"
 	"fmt"
 	"strings"
@@ -23,7 +24,9 @@ func (usuario *Usuario) Preparar(action string) error {
 		return err
 	}
 
-	usuario.formatar()
+	if err := usuario.formatar(action); err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -50,8 +53,19 @@ func (usuario *Usuario) validar(action string) error {
 	return nil
 }
 
-func (usuario *Usuario) formatar() {
+func (usuario *Usuario) formatar(etapa string) error {
 	usuario.Nome = strings.TrimSpace(usuario.Nome)
 	usuario.Nick = strings.TrimSpace(usuario.Nick)
 	usuario.Email = strings.TrimSpace(usuario.Email)
+
+	if etapa == "cadastrar" {
+		senhaComHash, err := security.Hash(usuario.Senha)
+		if err != nil {
+			return err
+		}
+
+		usuario.Senha = string(senhaComHash)
+	}
+
+	return nil
 }
