@@ -128,3 +128,22 @@ func (u usuarios) Destroy(ID uint64) error {
 
 	return nil
 }
+
+func (u usuarios) FindByEmail(email string) (models.Usuario, error) {
+	row, err := u.db.Query("SELECT id, senha FROM USUARIOS WHERE email = ?", email)
+	if err != nil {
+		return models.Usuario{}, err
+	}
+
+	defer row.Close()
+
+	var usuario models.Usuario
+
+	if row.Next() {
+		if err := row.Scan(&usuario.ID, &usuario.Senha); err != nil {
+			return models.Usuario{}, err
+		}
+	}
+
+	return usuario, nil
+}
