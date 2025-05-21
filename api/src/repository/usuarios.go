@@ -206,3 +206,32 @@ func (u usuarios) GetFollowers(usuarioId uint64) ([]models.Usuario, error) {
 
 	return usuarios, nil
 }
+
+func (u usuarios) GetFollowing(usuarioId uint64) ([]models.Usuario, error) {
+	rows, err := u.db.Query(
+		"SELECT u.id, u.nome, u.nick, u.email, u.criadoEm FROM USUARIOS u INNER JOIN SEGUIDORES s ON s.seguidor_id = u.id WHERE s.seguidor_id = ?",
+		usuarioId)
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	var usuarios []models.Usuario
+	for rows.Next() {
+		var usuario models.Usuario
+
+		if err = rows.Scan(
+			&usuario.ID,
+			&usuario.Nome,
+			&usuario.Nick,
+			&usuario.Email,
+			&usuario.CriadoEm,
+		); err != nil {
+			return nil, err
+		}
+		usuarios = append(usuarios, usuario)
+	}
+
+	return usuarios, nil
+}
