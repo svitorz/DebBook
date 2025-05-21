@@ -162,3 +162,47 @@ func (u usuarios) Follow(usuarioID, seguidorId uint64) error {
 
 	return nil
 }
+
+func (u usuarios) Unfollow(usuarioID, seguidorId uint64) error {
+	statement, err := u.db.Prepare("DELETE FROM SEGUIDORES WHERE usuario_id = ? AND seguidor_id = ?")
+	if err != nil {
+		return err
+	}
+
+	defer statement.Close()
+
+	if _, err = statement.Exec(usuarioID, seguidorId); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (u usuarios) GetFollowers(usuarioId uint64) ([]models.Usuario, error) {
+	rows, err := u.db.Query(
+		"SELECT u.id, u.nome, u.nick, u.email, u.criadoEm FROM USUARIOS u INNER JOIN SEGUIDORES s ON s.seguidor_id = u.id WHERE s.usuario_id = ?",
+		usuarioId)
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	var usuarios []models.Usuario
+	for rows.Next() {
+		var usuario models.Usuario
+
+		if err = rows.Scan(
+			&usuario.ID,
+			&usuario.Nome,
+			&usuario.Nick,
+			&usuario.Email,
+			&usuario.CriadoEm,
+		); err != nil {
+			return nil, err
+		}
+		usuarios = append(usuarios, usuario)
+	}
+
+	return usuarios, nil
+}
