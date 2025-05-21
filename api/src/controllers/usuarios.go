@@ -223,3 +223,64 @@ func SeguirUsuario(w http.ResponseWriter, r *http.Request) {
 
 	responses.JSON(w, http.StatusNoContent, nil)
 }
+
+func PararDeSeguirUsuario(w http.ResponseWriter, r *http.Request) {
+	seguidorID, err := auth.GetUserID(r)
+	if err != nil {
+		responses.Err(w, http.StatusUnauthorized, err)
+		return
+	}
+
+	params := mux.Vars(r)
+	usuarioId, err := strconv.ParseUint(params["usuarioId"], 10, 64)
+	if err != nil {
+		responses.Err(w, http.StatusBadRequest, err)
+		return
+	}
+
+	if seguidorID == usuarioId {
+		responses.Err(w, http.StatusForbidden, errors.New("Não é possível parar de seguir você mesmo."))
+	}
+
+	db, err := database.Conectar()
+	if err != nil {
+		responses.Err(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	defer db.Close()
+
+	repository := repository.NewUsersRepository(db)
+	if err = repository.Unfollow(usuarioId, seguidorID); err != nil {
+		responses.Err(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	responses.JSON(w, http.StatusNoContent, nil)
+}
+
+func BuscarSeguidores(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	usuarioId, err := strconv.ParseUint(params["usuarioId"], 10, 64)
+	if err != nil {
+		responses.Err(w, http.StatusBadRequest, err)
+		return
+	}
+
+	db, err := database.Conectar()
+	if err != nil {
+		responses.Err(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	defer db.Close()
+
+	repository := repository.NewUsersRepository(db)
+	seguidores, err := repository.GetFollowers(usuarioId)
+	if err != nil {
+		responses.Err(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	responses.JSON(w, http.StatusOK, seguidores)
+}
