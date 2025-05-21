@@ -147,3 +147,18 @@ func (u usuarios) FindByEmail(email string) (models.Usuario, error) {
 
 	return usuario, nil
 }
+
+func (u usuarios) Follow(usuarioID, seguidorId uint64) error {
+	statement, err := u.db.Prepare("INSERT IGNORE INTO SEGUIDORES(usuario_id, seguidor_id) VALUES (?,?)")
+	if err != nil {
+		return err
+	}
+
+	defer statement.Close()
+
+	if _, err = statement.Exec(usuarioID, seguidorId); err != nil {
+		return err
+	}
+
+	return nil
+}
