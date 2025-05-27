@@ -149,3 +149,31 @@ func (p publicacoes) FindByUserId(userId uint64) (models.Publicacao, error) {
 	}
 	return post, nil
 }
+
+func (p publicacoes) LikePost(userId uint64, postId uint64) error {
+	stmt, err := p.db.Prepare(`INSERT INTO likes (user_id, post_id) VALUES (?, ?)`)
+	if err != nil {
+		return err
+	}
+
+	defer stmt.Close()
+
+	if _, err := stmt.Exec(userId, postId); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (p publicacoes) UnlikePost(userId uint64, postId uint64) error {
+	stmt, err := p.db.Prepare(`DELETE FROM likes WHERE user_id = ? AND post_id = ?`)
+	if err != nil {
+		return err
+	}
+
+	defer stmt.Close()
+
+	if _, err := stmt.Exec(userId, postId); err != nil {
+		return err
+	}
+	return nil
+}

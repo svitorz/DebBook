@@ -246,3 +246,77 @@ func BuscarPublicacaoDoUsuario(w http.ResponseWriter, r *http.Request) {
 
 	responses.JSON(w, http.StatusOK, post)
 }
+
+func CurtirPublicacao(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+
+	userId, err := auth.GetUserID(r)
+	if err != nil {
+		responses.Err(w, http.StatusUnauthorized, err)
+		return
+	}
+
+	postId, err := strconv.ParseUint(params["publicacaoId"], 10, 64)
+	if err != nil {
+		responses.Err(w, http.StatusNoContent, err)
+		return
+	}
+
+	db, err := database.Conectar()
+	if err != nil {
+		responses.Err(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	defer db.Close()
+	repository := repository.NewPostsRepository(db)
+
+	savedPost, err := repository.FindById(postId)
+	if err != nil {
+		responses.Err(w, http.StatusNotFound, err)
+	}
+
+	if err = repository.LikePost(userId, savedPost.ID); err != nil {
+		responses.Err(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	responses.JSON(w, http.StatusNoContent, nil)
+}
+
+func DescurtirPublicacao(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+
+	userId, err := auth.GetUserID(r)
+	if err != nil {
+		responses.Err(w, http.StatusUnauthorized, err)
+		return
+	}
+
+	postId, err := strconv.ParseUint(params["publicacaoId"], 10, 64)
+	if err != nil {
+		responses.Err(w, http.StatusNoContent, err)
+		return
+	}
+
+	db, err := database.Conectar()
+	if err != nil {
+		responses.Err(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	defer db.Close()
+	repository := repository.NewPostsRepository(db)
+
+	savedPost, err := repository.FindById(postId)
+	if err != nil {
+		responses.Err(w, http.StatusNotFound, err)
+	}
+
+	if err = repository.UnlikePost(userId, savedPost.ID); err != nil {
+		responses.Err(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	responses.JSON(w, http.StatusNoContent, nil)
+}
