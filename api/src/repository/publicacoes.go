@@ -35,7 +35,7 @@ func (p publicacoes) Store(publicacao models.Publicacao) (uint64, error) {
 }
 
 func (p publicacoes) FindById(publicacaoID uint64) (models.Publicacao, error) {
-	rows, err := p.db.Query(`SELECT p.*, u.nick FROM PUBLICACOES p INNER JOIN USUARIOS u ON u.id=p.autor_id WHERE p.id = ?`, publicacaoID)
+	rows, err := p.db.Query(`SELECT p.id, p.titulo, p.conteudo, p.autor_id, p.criadaEm, u.nick FROM PUBLICACOES p INNER JOIN USUARIOS u ON u.id=p.autor_id WHERE p.id = ?`, publicacaoID)
 	if err != nil {
 		return models.Publicacao{}, err
 	}
@@ -50,10 +50,13 @@ func (p publicacoes) FindById(publicacaoID uint64) (models.Publicacao, error) {
 			&post.Titulo,
 			&post.Conteudo,
 			&post.AutorID,
-			&post.Curtidas,
 			&post.CriadaEm,
 			&post.AutorNick,
 		); err != nil {
+			return models.Publicacao{}, err
+		}
+		post.Curtidas, err = p.getLikes(post.ID)
+		if err != nil {
 			return models.Publicacao{}, err
 		}
 	}
@@ -61,7 +64,7 @@ func (p publicacoes) FindById(publicacaoID uint64) (models.Publicacao, error) {
 }
 
 func (p publicacoes) Index(userId uint64) ([]models.Publicacao, error) {
-	rows, err := p.db.Query(`SELECT DISTINCT p.*, u.nick 
+	rows, err := p.db.Query(`SELECT DISTINCT  p.id, p.titulo, p.conteudo, p.autor_id, p.criadaEm, u.nick 
 				FROM PUBLICACOES p 
 				INNER JOIN USUARIOS u ON u.id = p.autor_id 
 				LEFT JOIN SEGUIDORES s ON p.autor_id = s.usuario_id 
@@ -83,10 +86,13 @@ func (p publicacoes) Index(userId uint64) ([]models.Publicacao, error) {
 			&publicacao.Titulo,
 			&publicacao.Conteudo,
 			&publicacao.AutorID,
-			&publicacao.Curtidas,
 			&publicacao.CriadaEm,
 			&publicacao.AutorNick,
 		); err != nil {
+			return nil, err
+		}
+		publicacao.Curtidas, err = p.getLikes(publicacao.ID)
+		if err != nil {
 			return nil, err
 		}
 		publicacoes = append(publicacoes, publicacao)
@@ -125,7 +131,7 @@ func (p publicacoes) Destroy(publicacaoId uint64) error {
 }
 
 func (p publicacoes) FindByUserId(userId uint64) (models.Publicacao, error) {
-	rows, err := p.db.Query(`SELECT p.*, u.nick FROM PUBLICACOES p INNER JOIN USUARIOS u ON u.id=p.autor_id WHERE p.autor_id = ?`, userId)
+	rows, err := p.db.Query(`SELECT p.id, p.titulo, p.conteudo, p.autor_id, p.criadaEm, u.nick FROM PUBLICACOES p INNER JOIN USUARIOS u ON u.id=p.autor_id WHERE p.autor_id = ?`, userId)
 	if err != nil {
 		return models.Publicacao{}, err
 	}
@@ -140,10 +146,13 @@ func (p publicacoes) FindByUserId(userId uint64) (models.Publicacao, error) {
 			&post.Titulo,
 			&post.Conteudo,
 			&post.AutorID,
-			&post.Curtidas,
 			&post.CriadaEm,
 			&post.AutorNick,
 		); err != nil {
+			return models.Publicacao{}, err
+		}
+		post.Curtidas, err = p.getLikes(post.ID)
+		if err != nil {
 			return models.Publicacao{}, err
 		}
 	}
@@ -176,4 +185,15 @@ func (p publicacoes) UnlikePost(userId uint64, postId uint64) error {
 		return err
 	}
 	return nil
+}
+
+func (p publicacoes) getLikes(postId uint64) (uint64, error) {
+	var count uint64
+
+	err := p.db.QueryRow("SELECT COUNT(*) FROM likes WHERE post_id = ?", postId).Scan(&count)
+	if err != nil {
+		return 0, err
+	}
+
+	return count, nil
 }
