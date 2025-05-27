@@ -11,9 +11,9 @@ type Publicacao struct {
 	Titulo    string    `json:"titulo,omitempty"`   // max 50
 	Conteudo  string    `json:"conteudo,omitempty"` // max 300
 	AutorID   uint64    `json:"autor_id,omitempty"`
-	AutorNick uint64    `json:"autor_nick,omitempty"`
-	Curtidas  uint64    `json:"curtidas`
-	CriadaEm  time.Time `json:"criadaEm,omitempty"`
+	AutorNick string    `json:"autor_nick,omitempty"`
+	Curtidas  uint64    `json:"curtidas"`
+	CriadaEm  time.Time `json:"criadaEm"`
 }
 
 func (publicacao *Publicacao) Preparar() error {
