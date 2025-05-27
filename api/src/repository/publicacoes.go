@@ -93,3 +93,33 @@ func (p publicacoes) Index(userId uint64) ([]models.Publicacao, error) {
 	}
 	return publicacoes, nil
 }
+
+func (p publicacoes) Update(publicacaoId uint64, publicacao models.Publicacao) error {
+	statement, err := p.db.Prepare("UPDATE PUBLICACOES SET titulo = ?, conteudo = ? where id = ?")
+	if err != nil {
+		return err
+	}
+
+	defer statement.Close()
+
+	if _, err = statement.Exec(publicacao.Titulo, publicacao.Conteudo, publicacaoId); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (p publicacoes) Destroy(publicacaoId uint64) error {
+	statement, err := p.db.Prepare("DELETE FROM PUBLICACOES where id = ?")
+	if err != nil {
+		return err
+	}
+
+	defer statement.Close()
+
+	if _, err = statement.Exec(publicacaoId); err != nil {
+		return err
+	}
+
+	return nil
+}
