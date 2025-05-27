@@ -40,3 +40,10 @@ CREATE TABLE PUBLICACOES(
   curtidas int default 0,
   criadaEm timestamp default current_timestamp
 )ENGINE=INNODB;
+
+CREATE TABLE likes (
+    user_id INTEGER NOT NULL REFERENCES users(id),
+    post_id INTEGER NOT NULL REFERENCES posts(id),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (user_id, post_id) 
+)ENGINE=INNODB;
