@@ -40,7 +40,6 @@ API RESTful desenvolvida em **Go (Golang)** com foco em performance, boas práti
 git clone https://github.com/svitorz/DevBook.git
 cd DevBook
 ```
-````
 
 ### Crie o arquivo `.env`
 
