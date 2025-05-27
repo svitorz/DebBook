@@ -1,4 +1,3 @@
-````md
 # DevBook 📘
 
 API RESTful desenvolvida em **Go (Golang)** com foco em performance, boas práticas e escalabilidade. Inspirado em redes sociais, o DevBook permite que usuários se cadastrem, publiquem conteúdo, sigam outros perfis e curtam publicações.
@@ -41,7 +40,6 @@ API RESTful desenvolvida em **Go (Golang)** com foco em performance, boas práti
 git clone https://github.com/svitorz/DevBook.git
 cd DevBook
 ```
-````
 
 ### Crie o arquivo `.env`
 
@@ -119,9 +117,3 @@ Desenvolvido por **[Vitor Fábio de Castro Souza](https://www.linkedin.com/in/sv
 ## 📜 Licença
 
 Este projeto está licenciado sob a licença MIT - veja o arquivo [LICENSE](LICENSE) para mais detalhes.
-
-```
-
----
-
-```
