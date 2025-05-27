@@ -117,7 +117,3 @@ Desenvolvido por **[Vitor Fábio de Castro Souza](https://www.linkedin.com/in/sv
 ## 📜 Licença
 
 Este projeto está licenciado sob a licença MIT - veja o arquivo [LICENSE](LICENSE) para mais detalhes.
-
-```
-
----
