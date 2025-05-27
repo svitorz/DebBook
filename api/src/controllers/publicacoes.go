@@ -29,6 +29,11 @@ func CriarPublicacao(w http.ResponseWriter, r *http.Request) {
 	publicacao.AutorID = userId
 
 	if err = json.Unmarshal(request, &publicacao); err != nil {
+		responses.Err(w, http.StatusForbidden, err)
+		return
+	}
+
+	if err := publicacao.Preparar(); err != nil {
 		responses.Err(w, http.StatusInternalServerError, err)
 		return
 	}
