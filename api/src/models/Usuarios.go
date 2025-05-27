@@ -3,7 +3,7 @@ package models
 import (
 	"api/src/security"
 	"errors"
-	"fmt"
+	"regexp"
 	"strings"
 	"time"
 
@@ -43,12 +43,45 @@ func (usuario *Usuario) validar(action string) error {
 	}
 
 	if err := checkmail.ValidateFormat(usuario.Email); err != nil {
-		fmt.Println(usuario.Email)
 		return errors.New(" e-mail inserido é inválido")
 	}
 
 	if action == "cadastrar" && usuario.Senha == "" {
 		return errors.New("o senha é obrigatório e não pode estar em branco")
+	}
+
+	if len(usuario.Senha) < 8 {
+		return errors.New("a senha deve ter ao menos 8 caracteres")
+	}
+
+	if ok, err := regexp.MatchString(`[A-Z]`, usuario.Senha); err != nil {
+		return err
+	} else if !ok {
+		return errors.New("a senha deve conter ao menos uma letra maiúscula")
+	}
+	if ok, err := regexp.MatchString(`[a-z]`, usuario.Senha); err != nil {
+		return err
+	} else if !ok {
+		return errors.New("a senha deve conter ao menos uma letra minúscula")
+	}
+	if ok, err := regexp.MatchString(`[0-9]`, usuario.Senha); err != nil {
+		return err
+	} else if !ok {
+		return errors.New("a senha deve conter ao menos um número")
+	}
+	if ok, err := regexp.MatchString(`[!@#\$%\^&\*\(\)_\+\-=\[\]\{\};':"\\|,.<>\/?]`, usuario.Senha); err != nil {
+		return err
+	} else if !ok {
+		return errors.New("a senha deve conter ao menos um caracter especial. EX: !@#$")
+	}
+	if len(usuario.Nome) > 50 {
+		return errors.New("o nome não pode ter mais que 50 caracteres")
+	}
+	if len(usuario.Nick) > 50 {
+		return errors.New("o nick não pode ter mais que 50 caracteres")
+	}
+	if len(usuario.Email) > 50 {
+		return errors.New("o email não pode ter mais que 50 caracteres")
 	}
 	return nil
 }
