@@ -123,3 +123,29 @@ func (p publicacoes) Destroy(publicacaoId uint64) error {
 
 	return nil
 }
+
+func (p publicacoes) FindByUserId(userId uint64) (models.Publicacao, error) {
+	rows, err := p.db.Query(`SELECT p.*, u.nick FROM PUBLICACOES p INNER JOIN USUARIOS u ON u.id=p.autor_id WHERE p.autor_id = ?`, userId)
+	if err != nil {
+		return models.Publicacao{}, err
+	}
+
+	defer rows.Close()
+
+	var post models.Publicacao
+
+	if rows.Next() {
+		if err = rows.Scan(
+			&post.ID,
+			&post.Titulo,
+			&post.Conteudo,
+			&post.AutorID,
+			&post.Curtidas,
+			&post.CriadaEm,
+			&post.AutorNick,
+		); err != nil {
+			return models.Publicacao{}, err
+		}
+	}
+	return post, nil
+}

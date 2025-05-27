@@ -22,6 +22,11 @@ var postRoutes = []Route{
 		Funcao:             controllers.BuscarPublicacao,
 		RequerAutenticacao: true,
 	}, {
+		URI:                "/publicacoes/usuario/{usuarioId}",
+		Metodo:             http.MethodGet,
+		Funcao:             controllers.BuscarPublicacaoDoUsuario,
+		RequerAutenticacao: true,
+	}, {
 		URI:                "/publicacoes/{publicacaoId}",
 		Metodo:             http.MethodPut,
 		Funcao:             controllers.AtualizarPublicacao,

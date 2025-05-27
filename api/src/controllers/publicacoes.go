@@ -220,3 +220,29 @@ func DeletarPublicacao(w http.ResponseWriter, r *http.Request) {
 
 	responses.JSON(w, http.StatusNoContent, nil)
 }
+
+func BuscarPublicacaoDoUsuario(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+
+	postId, err := strconv.ParseUint(params["usuarioId"], 10, 64)
+	if err != nil {
+		responses.Err(w, http.StatusNoContent, err)
+		return
+	}
+	db, err := database.Conectar()
+	if err != nil {
+		responses.Err(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	defer db.Close()
+
+	repository := repository.NewPostsRepository(db)
+	post, err := repository.FindByUserId(postId)
+	if err != nil {
+		responses.Err(w, http.StatusNotFound, err)
+		return
+	}
+
+	responses.JSON(w, http.StatusOK, post)
+}
