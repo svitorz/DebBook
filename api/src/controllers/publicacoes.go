@@ -9,6 +9,9 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
+	"strconv"
+
+	"github.com/gorilla/mux"
 )
 
 func CriarPublicacao(w http.ResponseWriter, r *http.Request) {
@@ -54,7 +57,55 @@ func CriarPublicacao(w http.ResponseWriter, r *http.Request) {
 	responses.JSON(w, http.StatusCreated, publicacao)
 }
 
-func BuscarPublicacao(w http.ResponseWriter, r *http.Request)    {}
-func BuscarPublicacoes(w http.ResponseWriter, r *http.Request)   {}
+func BuscarPublicacao(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+
+	postId, err := strconv.ParseUint(params["publicacaoId"], 10, 64)
+	if err != nil {
+		responses.Err(w, http.StatusNoContent, err)
+		return
+	}
+	db, err := database.Conectar()
+	if err != nil {
+		responses.Err(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	defer db.Close()
+
+	repository := repository.NewPostsRepository(db)
+	post, err := repository.FindById(postId)
+	if err != nil {
+		responses.Err(w, http.StatusNotFound, err)
+		return
+	}
+
+	responses.JSON(w, http.StatusOK, post)
+}
+
+func BuscarPublicacoes(w http.ResponseWriter, r *http.Request) {
+	userId, err := auth.GetUserID(r)
+	if err != nil {
+		responses.Err(w, http.StatusUnauthorized, err)
+		return
+	}
+
+	db, err := database.Conectar()
+	if err != nil {
+		responses.Err(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	defer db.Close()
+	repository := repository.NewPostsRepository(db)
+	posts, err := repository.Index(userId)
+	if err != nil {
+		responses.Err(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	responses.JSON(w, http.StatusOK, posts)
+}
+
 func AtualizarPublicacao(w http.ResponseWriter, r *http.Request) {}
 func DeletarPublicacao(w http.ResponseWriter, r *http.Request)   {}

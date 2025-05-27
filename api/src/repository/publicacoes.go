@@ -33,3 +33,63 @@ func (p publicacoes) Store(publicacao models.Publicacao) (uint64, error) {
 
 	return uint64(lastInsertId), nil
 }
+
+func (p publicacoes) FindById(publicacaoID uint64) (models.Publicacao, error) {
+	rows, err := p.db.Query(`SELECT p.*, u.nick FROM PUBLICACOES p INNER JOIN USUARIOS u ON u.id=p.autor_id WHERE p.id = ?`, publicacaoID)
+	if err != nil {
+		return models.Publicacao{}, err
+	}
+
+	defer rows.Close()
+
+	var post models.Publicacao
+
+	if rows.Next() {
+		if err = rows.Scan(
+			&post.ID,
+			&post.Titulo,
+			&post.Conteudo,
+			&post.AutorID,
+			&post.Curtidas,
+			&post.CriadaEm,
+			&post.AutorNick,
+		); err != nil {
+			return models.Publicacao{}, err
+		}
+	}
+	return post, nil
+}
+
+func (p publicacoes) Index(userId uint64) ([]models.Publicacao, error) {
+	rows, err := p.db.Query(`SELECT DISTINCT p.*, u.nick 
+				FROM PUBLICACOES p 
+				INNER JOIN USUARIOS u ON u.id = p.autor_id 
+				LEFT JOIN SEGUIDORES s ON p.autor_id = s.usuario_id 
+				WHERE u.id = ? OR s.seguidor_id = ?
+				ORDER BY p.id DESC;`, userId, userId)
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	var publicacoes []models.Publicacao
+
+	for rows.Next() {
+		var publicacao models.Publicacao
+
+		if err = rows.Scan(
+			&publicacao.ID,
+			&publicacao.Titulo,
+			&publicacao.Conteudo,
+			&publicacao.AutorID,
+			&publicacao.Curtidas,
+			&publicacao.CriadaEm,
+			&publicacao.AutorNick,
+		); err != nil {
+			return nil, err
+		}
+		publicacoes = append(publicacoes, publicacao)
+	}
+	return publicacoes, nil
+}
